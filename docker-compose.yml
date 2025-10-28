@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: capmanage-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    container_name: capmanage-backend
+    depends_on:
+      - mongo
+    env_file:
+      - .env.example
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/capmanage
+      - FRONTEND_BASE_URL=http://localhost:3000
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "5000:5000"
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    container_name: capmanage-frontend
+    depends_on:
+      - backend
+    env_file:
+      - .env.example
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    command: npm run dev
+
+volumes:
+  mongo_data:

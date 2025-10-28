@@ -1,0 +1,23 @@
+﻿# Node / Next.js
+node_modules/
+.next/
+dist/
+build/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+# OS and editor
+.DS_Store
+.vscode/
+# Env files — DO NOT commit real secrets
+.env
+.env.local
+.env.*.local
+.env.* 
+# Logs, coverage, temp
+coverage/
+logs/
+*.log
