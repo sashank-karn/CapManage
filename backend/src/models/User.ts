@@ -39,7 +39,14 @@ const userSchema = new Schema<IUserDocument>(
     metadata: { type: Schema.Types.Mixed },
     isActive: { type: Boolean, default: true },
     isEmailVerified: { type: Boolean, default: false },
-    facultyStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
+    facultyStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: function (this: IUserDocument) {
+        // Only set a default for faculty; others should not have a facultyStatus
+        return this.role === 'faculty' ? 'pending' : undefined as any;
+      }
+    },
     emailVerificationToken: { type: String },
     emailVerificationTokenExpires: { type: Date },
     passwordResetToken: { type: String },

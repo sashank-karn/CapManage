@@ -238,8 +238,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setStorageMode(options?.remember ? 'local' : 'session');
         setInitialized(true);
         publishToast(`Welcome back, ${response.user.name}!`, 'success');
-        if (pathname === '/login' || pathname === '/register') {
-          router.push('/dashboard');
+          if (pathname === '/login' || pathname === '/register') {
+            // Send users to the role-aware home. The '/' page will route admins to /admin
+            // and show faculty/students their respective home content.
+            router.push('/');
         }
       } catch (error) {
         const message = extractApiErrorMessage(error, 'Unable to sign in. Check your credentials.');
@@ -261,7 +263,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     resetSession();
-    router.push('/login');
+        // Send users back to role-aware home instead of the old dashboard
+        router.push('/');
   }, [refreshToken, resetSession, router]);
 
   const handleRegisterStudent = useCallback(

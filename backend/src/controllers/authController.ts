@@ -14,6 +14,7 @@ import {
   updateFacultyRequestStatus
 } from '../services/authService';
 import { authorize } from '../middleware/authorize';
+import { authenticate } from '../middleware/authenticate';
 
 export const registerStudentHandler = asyncHandler(async (req: Request, res: Response) => {
   await registerStudent(req.body);
@@ -55,10 +56,12 @@ export const resetPasswordHandler = asyncHandler(async (req: Request, res: Respo
   res.json(success({ message: 'Password updated successfully.' }));
 });
 
-export const listPendingFacultyRequestsHandler = [
+export const listFacultyRequestsHandler = [
   authorize(['admin']),
-  asyncHandler(async (_req: Request, res: Response) => {
-    const requests = await listFacultyRequests('pending');
+  asyncHandler(async (req: Request, res: Response) => {
+    const raw = (req.query.status as string | undefined) ?? 'pending';
+    const status = raw === 'approved' || raw === 'rejected' ? raw : 'pending';
+    const requests = await listFacultyRequests(status);
     res.json(success({ requests }));
   })
 ];
@@ -68,5 +71,25 @@ export const updateFacultyRequestHandler = [
   asyncHandler(async (req: Request, res: Response) => {
     const request = await updateFacultyRequestStatus(req.params.id, req.body.status, req.currentUser!);
     res.json(success({ request }));
+  })
+];
+
+export const getMeHandler = [
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const u = req.currentUser!;
+    res.json(
+      success({
+        user: {
+          _id: u._id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          isActive: u.isActive,
+          isEmailVerified: u.isEmailVerified,
+          facultyStatus: u.facultyStatus
+        }
+      })
+    );
   })
 ];

@@ -106,7 +106,14 @@ export const generateTokenPair = async (
 };
 
 export const verifyAccessToken = (token: string): TokenPayload => {
-  return jwt.verify(token, env.ACCESS_TOKEN_SECRET as Secret) as TokenPayload;
+  try {
+    return jwt.verify(token, env.ACCESS_TOKEN_SECRET as Secret) as TokenPayload;
+  } catch (e: any) {
+    const err = new Error('Invalid or expired access token') as Error & { statusCode?: number; details?: unknown };
+    err.statusCode = 401;
+    err.details = e?.message;
+    throw err;
+  }
 };
 
 export const verifyRefreshToken = async (

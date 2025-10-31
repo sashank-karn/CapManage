@@ -38,13 +38,14 @@ const getTransporter = (): Promise<nodemailer.Transporter> => {
 };
 
 interface SendMailInput {
-  to: string;
+  to?: string;
   subject: string;
   html: string;
   text?: string;
+  attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>;
 }
 
-export const sendMail = async ({ to, subject, html, text }: SendMailInput): Promise<void> => {
+export const sendMail = async ({ to, subject, html, text, attachments }: SendMailInput): Promise<void> => {
   try {
     const transporter = await getTransporter();
     const info = await transporter.sendMail({
@@ -52,7 +53,8 @@ export const sendMail = async ({ to, subject, html, text }: SendMailInput): Prom
       to,
       subject,
       html,
-      text
+      text,
+      attachments
     });
 
     const previewUrl = nodemailer.getTestMessageUrl(info);

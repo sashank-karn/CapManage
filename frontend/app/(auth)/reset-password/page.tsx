@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,7 +28,7 @@ const schema = z
 
 type ResetPasswordForm = z.infer<typeof schema>;
 
-const ResetPasswordPage = () => {
+const ResetPasswordContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -112,5 +112,11 @@ const ResetPasswordPage = () => {
     </section>
   );
 };
+
+const ResetPasswordPage = () => (
+  <Suspense fallback={<div className="text-sm text-slate-500">Loading...</div>}>
+    <ResetPasswordContent />
+  </Suspense>
+);
 
 export default ResetPasswordPage;

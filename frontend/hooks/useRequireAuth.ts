@@ -42,7 +42,8 @@ export const useRequireAuth = (options?: UseRequireAuthOptions) => {
       if (!silent) {
         publishToast('You do not have access to that area.', 'error');
       }
-      router.replace('/dashboard');
+      // Send users to role-aware home instead of the old dashboard
+      router.replace('/');
     }
   }, [initialized, user, authorized, router, redirectTo, silent]);
 

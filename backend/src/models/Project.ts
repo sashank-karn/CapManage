@@ -8,6 +8,8 @@ export interface IMilestone {
   type: MilestoneType;
   description?: string;
   status: 'pending' | 'completed' | 'late';
+  completedAt?: Date;
+  notes?: string;
 }
 
 export interface IProject {
@@ -30,7 +32,9 @@ const milestoneSchema = new Schema<IMilestone>(
     dueDate: { type: Date, required: true },
     type: { type: String, enum: ['synopsis', 'midterm', 'final', 'custom'], default: 'custom' },
     description: { type: String },
-    status: { type: String, enum: ['pending', 'completed', 'late'], default: 'pending' }
+    status: { type: String, enum: ['pending', 'completed', 'late'], default: 'pending' },
+    completedAt: { type: Date },
+    notes: { type: String }
   },
   { _id: false }
 );

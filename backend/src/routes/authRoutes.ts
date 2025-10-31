@@ -8,8 +8,9 @@ import {
   logoutHandler,
   requestPasswordResetHandler,
   resetPasswordHandler,
-  listPendingFacultyRequestsHandler,
-  updateFacultyRequestHandler
+  listFacultyRequestsHandler,
+  updateFacultyRequestHandler,
+  getMeHandler
 } from '../controllers/authController';
 import { validateRequest } from '../middleware/validateRequest';
 import {
@@ -35,7 +36,10 @@ router.post('/logout', validateRequest(logoutSchema), logoutHandler);
 router.post('/password/request-reset', validateRequest(requestResetSchema), requestPasswordResetHandler);
 router.post('/password/reset', validateRequest(resetPasswordSchema), resetPasswordHandler);
 
-router.get('/faculty/requests', authenticate, ...listPendingFacultyRequestsHandler);
+router.get('/faculty/requests', authenticate, ...listFacultyRequestsHandler);
 router.patch('/faculty/requests/:id', authenticate, ...updateFacultyRequestHandler);
+
+// Authenticated session introspection
+router.get('/me', ...getMeHandler);
 
 export default router;

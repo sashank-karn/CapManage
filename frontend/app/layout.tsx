@@ -19,8 +19,10 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
       <body className={inter.className}>
         <AuthProvider>
           <NavBar />
-          <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-6 py-6">
-            {children}
+          <main className="min-h-[calc(100vh-3.25rem)] w-full px-4 py-6 md:px-8">
+            <div className="mx-auto max-w-6xl">
+              {children}
+            </div>
           </main>
           <ToastContainer />
         </AuthProvider>

@@ -14,6 +14,8 @@ import {
   type TokenPair
 } from './tokenService';
 import type { ApiError } from '../middleware/errorHandler';
+import { logActivity } from './activityService';
+import { Notification } from '../models/Notification';
 
 interface RegisterStudentInput {
   name: string;
@@ -59,7 +61,7 @@ export const registerStudent = async (input: RegisterStudentInput): Promise<void
   const verificationToken = crypto.randomUUID();
   const verificationExpires = dayjs().add(env.emailVerificationExpiryMinutes, 'minute').toDate();
 
-  await User.create({
+  const user = await User.create({
     name: input.name,
     email: input.email.toLowerCase(),
     enrollmentId: input.enrollmentId,
@@ -78,6 +80,8 @@ export const registerStudent = async (input: RegisterStudentInput): Promise<void
     subject: 'Verify your CapManage account',
     html: `<p>Hello ${input.name},</p><p>Please verify your email by clicking <a href="${verificationUrl}">this link</a>. The link expires in ${env.emailVerificationExpiryMinutes} minutes.</p>`
   });
+
+  await logActivity({ type: 'registration', userId: user._id, message: 'Student self-registered' });
 };
 
 export const registerFaculty = async (input: RegisterFacultyInput): Promise<IFacultyRequestDocument> => {
@@ -118,6 +122,33 @@ export const registerFaculty = async (input: RegisterFacultyInput): Promise<IFac
     subject: 'Verify your CapManage faculty account',
     html: `<p>Hello ${input.name},</p><p>Please confirm your email by clicking <a href="${verificationUrl}">this link</a>. We will notify you once an administrator reviews your request.</p>`
   });
+
+  await logActivity({ type: 'registration', userId: user._id, message: 'Faculty self-registered' });
+
+  // Notify admins for approval
+  try {
+    const admins = await User.find({ role: 'admin', isActive: true }).lean();
+    for (const a of admins) {
+      await Notification.create({
+        recipient: a._id as any,
+        title: 'Faculty approval pending',
+        message: `${input.name} requested faculty access. Review in Admin dashboard.`,
+        channel: ['in-app', 'email'],
+        module: 'admin',
+        meta: { requestId: request._id }
+      } as any);
+      // Best-effort email
+      if (a.email) {
+        const subject = 'Faculty approval pending';
+        const html = `
+          <p>Dear Admin,</p>
+          <p><strong>${input.name}</strong> has requested faculty access.</p>
+          <p><a href="${env.FRONTEND_BASE_URL}/admin">Open Admin dashboard to review</a></p>
+        `;
+        await sendMail({ to: a.email, subject, html });
+      }
+    }
+  } catch {}
 
   return request;
 };
@@ -191,6 +222,7 @@ export const login = async (
   assertAccountStatus(user);
 
   const tokenPair = await generateTokenPair(user, ipAddress);
+  await logActivity({ type: 'login', userId: user._id, message: 'User logged in' });
   return {
     ...tokenPair,
     user: {
@@ -297,6 +329,13 @@ export const updateFacultyRequestStatus = async (
   user.isActive = status === 'approved';
   user.approvedBy = adminUser._id.toString();
   await user.save();
+
+  await logActivity({
+    type: status === 'approved' ? 'faculty-approve' : 'faculty-reject',
+    userId: user._id,
+    actorId: adminUser._id,
+    message: `Faculty request ${status}`
+  });
 
   await sendMail({
     to: user.email,

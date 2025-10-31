@@ -7,18 +7,34 @@ import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import routes from './routes';
+import path from 'path';
 import { errorHandler } from './middleware/errorHandler';
 import { env } from './config/env';
 
 const app = express();
 
 app.use(helmet());
+// Build CORS allowlist from FRONTEND_BASE_URL and optional CORS_ALLOWED_ORIGINS (CSV)
+const corsAllowList = [
+  env.FRONTEND_BASE_URL,
+  ...(env.CORS_ALLOWED_ORIGINS ? env.CORS_ALLOWED_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean) : [])
+];
+
 app.use(
   cors({
-    origin: env.FRONTEND_BASE_URL,
-    credentials: true
+    origin: (origin, callback) => {
+      // Allow server-to-server or tools without Origin header, especially in development
+      if (!origin) return callback(null, true);
+      if (corsAllowList.includes(origin)) return callback(null, true);
+      return callback(new Error(`CORS: Origin ${origin} not allowed`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
+// Handle preflight quickly
+app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -58,6 +74,12 @@ app.get('/healthz', (_req: Request, res: Response) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1', routes);
+
+// Private storage: do not expose storage directory directly; downloads go through guarded routes.
+// However, serve a minimal health check for storage presence (optional):
+app.get('/storage/health', (_req: Request, res: Response) => {
+  res.json({ success: true, data: { path: path.resolve(process.cwd(), 'storage') } });
+});
 
 app.use(errorHandler);
 

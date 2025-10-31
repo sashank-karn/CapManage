@@ -20,7 +20,17 @@ const envSchema = z.object({
   SMTP_PORT: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  FRONTEND_BASE_URL: z.string().url().default('http://localhost:3000')
+  FRONTEND_BASE_URL: z.string().url().default('http://localhost:3000'),
+  // Optional CSV of additional allowed CORS origins, e.g., "http://127.0.0.1:3000,http://localhost:5173"
+  CORS_ALLOWED_ORIGINS: z.string().optional(),
+  // Optional default admin bootstrap
+  ADMIN_EMAIL: z.string().email().default('admin@capmanage.com'),
+  ADMIN_NAME: z.string().default('Administrator'),
+  ADMIN_PASSWORD: z.string().default('Admin@123!'),
+  // Storage security
+  FILE_ENCRYPTION_KEY: z.string().optional(),
+  CLAMAV_HOST: z.string().optional(),
+  CLAMAV_PORT: z.string().optional()
 });
 
 const parsed = envSchema.safeParse(process.env);

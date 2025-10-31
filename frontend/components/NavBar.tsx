@@ -6,27 +6,27 @@ import { useAuth } from "../context/AuthContext";
 import { publishToast } from "../lib/toast";
 
 const links = [
-  { href: "/dashboard", label: "Dashboard", roles: ["student", "faculty", "admin"] },
-  { href: "/module1", label: "Module 1", roles: ["student", "faculty", "admin"] },
-  { href: "/module2", label: "Module 2", roles: ["student"] },
-  { href: "/module-3", label: "Module 3", roles: ["admin"] },
-  { href: "/module-4", label: "Module 4", roles: ["faculty", "admin"] },
-  { href: "/module-5", label: "Module 5", roles: ["student", "faculty"] },
-  { href: "/module-6", label: "Module 6", roles: ["faculty", "admin"] },
-  { href: "/module-7", label: "Module 7", roles: ["student", "faculty", "admin"] },
-  { href: "/module-8", label: "Module 8", roles: ["faculty", "admin"] },
-  { href: "/module9", label: "Module 9", roles: ["student", "faculty", "admin"] }
+  { href: "/admin", label: "Admin", roles: ["admin"] },
+  { href: "/admin/stats", label: "Dept Stats", roles: ["admin"] },
+  { href: "/faculty", label: "Faculty", roles: ["faculty"] },
+  { href: "/faculty/evaluations", label: "Evaluation Overview", roles: ["faculty"] },
+  { href: "/faculty/groups", label: "Groups", roles: ["faculty"] },
+  { href: "/faculty/messages", label: "Messages", roles: ["faculty"] },
+  { href: "/student", label: "Student", roles: ["student"] },
+  { href: "/student/messages", label: "Messages", roles: ["student"] },
+  { href: "/student/submissions", label: "Submissions", roles: ["student"] }
 ];
 
 export const NavBar = () => {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, initialized } = useAuth();
 
-  const visibleLinks = links.filter((link) => !user || link.roles.includes(user.role));
+  // Only show role-gated links after auth is initialized to avoid SSR/CSR mismatch
+  const visibleLinks = initialized && user ? links.filter((link) => link.roles.includes(user.role)) : [];
 
   return (
     <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+      <div className="mx-auto flex w-full max-w-[120rem] items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="text-lg font-semibold text-slate-900">
           CapManage
         </Link>
@@ -46,7 +46,10 @@ export const NavBar = () => {
           ))}
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
-          {user ? (
+          {!initialized ? (
+            // Keep SSR/CSR consistent while auth state hydrates
+            <div className="h-8 w-28 animate-pulse rounded bg-slate-200" aria-hidden />
+          ) : user ? (
             <>
               <span>{user.name}</span>
               <button

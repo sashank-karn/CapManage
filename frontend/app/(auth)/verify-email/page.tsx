@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { verifyEmail } from '../../../services/auth';
 import { publishToast } from '../../../lib/toast';
 
-const VerifyEmailPage = () => {
+const VerifyEmailContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -67,5 +67,11 @@ const VerifyEmailPage = () => {
     </section>
   );
 };
+
+const VerifyEmailPage = () => (
+  <Suspense fallback={<div className="text-sm text-slate-500">Loading...</div>}>
+    <VerifyEmailContent />
+  </Suspense>
+);
 
 export default VerifyEmailPage;
