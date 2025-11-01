@@ -49,11 +49,9 @@ router.get('/preferences/dashboard', getDashboardPrefs);
 router.post('/preferences/dashboard', validateRequest(z.object({ body: z.object({ order: z.array(z.string()), hidden: z.array(z.string()) }) })), saveDashboardPrefs);
 
 // Submissions & Milestones
-router.post(
-  '/submissions/upload',
-  vr(z.object({ body: z.object({ projectId: z.string().length(24), milestoneType: z.string().min(1) }) })),
-  uploadSubmission
-);
+// Note: multipart/form-data fields are parsed by multer inside the controller.
+// Do not use validateRequest here, as express doesn't parse multipart before multer runs.
+router.post('/submissions/upload', uploadSubmission);
 router.get(
   '/submissions/versions',
   vr(z.object({ query: z.object({ projectId: z.string().length(24), milestoneType: z.string().min(1), studentId: z.string().length(24).optional() }) })),

@@ -48,7 +48,7 @@ export const uploadSubmission = asyncHandler(async (req: Request, res: Response)
   const checksum = hash.digest('hex');
 
   // Anti-virus scan (best-effort, non-blocking)
-  let av = await avScanFile(filePath);
+  const av = await avScanFile(filePath);
 
   // Encrypt to .enc alongside original, then delete plaintext
   const encPath = `${filePath}.enc`;

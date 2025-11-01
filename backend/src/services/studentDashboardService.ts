@@ -4,7 +4,6 @@ import { Project } from '../models/Project';
 import { Submission } from '../models/Submission';
 import { Notification } from '../models/Notification';
 import { Message } from '../models/Message';
-import { Todo } from '../models/Todo';
 import { ActivityLog } from '../models/ActivityLog';
 
 export const buildStudentDashboardSnapshot = async (userId: string) => {

@@ -1,9 +1,8 @@
 import { Types } from 'mongoose';
 import { ReportSchedule } from '../models/ReportSchedule';
 import { sendMail } from '../utils/mailer';
-import { buildEvaluationStatsByDepartmentExcel, buildFacultyProgressExcel } from '../services/reportService';
+import { buildFacultyProgressExcel } from '../services/reportService';
 import PDFDocument from 'pdfkit';
-import ExcelJS from 'exceljs';
 import { Project } from '../models/Project';
 import { Submission } from '../models/Submission';
 import { EvaluationHistory } from '../models/EvaluationHistory';

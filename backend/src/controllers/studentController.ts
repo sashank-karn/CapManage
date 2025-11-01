@@ -109,7 +109,6 @@ export const saveDashboardPrefs = asyncHandler(async (req: Request, res: Respons
 
 // Evaluations summary for the current student
 export const listEvaluations = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.currentUser!._id.toString();
   const projectId = (req.query.projectId as string | undefined)?.trim();
   const query: any = { student: req.currentUser!._id };
   if (projectId) query.project = new Types.ObjectId(projectId);
